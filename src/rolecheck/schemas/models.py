@@ -340,6 +340,14 @@ class NodeExecutorIdentity(StrictModel):
     config_hash: Sha256Digest
 
 
+class RuntimeAdapterIdentity(StrictModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    runtime_id: NonEmptyStr
+    runtime_version: NonEmptyStr
+    config_hash: Sha256Digest
+
+
 class ArtifactSnapshot(StrictModel):
     producer_role_id: NonEmptyStr
     artifact_name: NonEmptyStr

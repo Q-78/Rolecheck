@@ -1,5 +1,13 @@
 """Runtime exports."""
 
+from rolecheck.runtime.adapter import (
+    FakeRuntimeAdapter,
+    RecordingRuntimeAdapter,
+    RuntimeAdapter,
+    RuntimeAdapterResult,
+    RuntimeCallRecord,
+    RuntimeExecutionRequest,
+)
 from rolecheck.runtime.dag_bypass import DagBypassOutcome, DagBypassRunner
 from rolecheck.runtime.interfaces import (
     AggregationRequest,
@@ -19,6 +27,7 @@ __all__ = [
     "Aggregator",
     "DagBypassOutcome",
     "DagBypassRunner",
+    "FakeRuntimeAdapter",
     "FrozenNodeInput",
     "FrozenRoleResponse",
     "MockAggregator",
@@ -28,4 +37,9 @@ __all__ = [
     "NodeExecutor",
     "ParallelRemovalOutcome",
     "ParallelRemovalRunner",
+    "RecordingRuntimeAdapter",
+    "RuntimeAdapter",
+    "RuntimeAdapterResult",
+    "RuntimeCallRecord",
+    "RuntimeExecutionRequest",
 ]
