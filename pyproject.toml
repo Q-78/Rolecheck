@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rolecheck"
+version = "0.1.0"
+description = "Research scaffold for pre-execution multi-agent role auditing"
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "pydantic>=2.8,<3",
+  "PyYAML>=6.0,<7",
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy>=1.11,<2",
+  "pytest>=8,<10",
+  "ruff>=0.6,<1",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+rolecheck = ["py.typed"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "RUF"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+pretty = true
+show_error_codes = true
+packages = ["rolecheck"]
+
+[[tool.mypy.overrides]]
+module = "yaml"
+ignore_missing_imports = true

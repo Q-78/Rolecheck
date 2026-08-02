@@ -1,0 +1,22 @@
+project:
+  name: RoleCheck
+  version: 0.1.0
+  research_spec_version: v0.2
+
+run:
+  experiment_id: repo-init-smoke
+  seed: 20260802
+  output_dir: outputs/runs
+  overwrite: false
+  information_setting: strict_task_level_pre_execution
+
+logging:
+  level: INFO
+  json_lines: false
+  filename: rolecheck.log
+
+mock_runtime:
+  enabled: true
+  runtime_id: mock-runtime-v1
+  synthetic_latency_ms_per_role: 1.0
+  synthetic_tokens_per_role: 0
