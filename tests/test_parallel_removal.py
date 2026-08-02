@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from rolecheck.config import MockRuntimeConfig
-from rolecheck.hashing import canonical_json_hash
+from rolecheck.hashing import canonical_json_hash, role_contract_hash
 from rolecheck.manifest import ExperimentManifest, create_manifest
 from rolecheck.runtime import (
     AggregationRequest,
@@ -97,7 +97,7 @@ def _manifest(
         },
         prompt_hashes={role.role_id: role.prompt_hash for role in team.roles},
         role_contract_hashes={
-            role.role_id: canonical_json_hash(role.model_dump(mode="json"))
+            role.role_id: role_contract_hash(role.model_dump(mode="json"))
             for role in team.roles
         },
         aggregator_id=aggregator.identity.aggregator_id,

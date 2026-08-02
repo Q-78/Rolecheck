@@ -35,9 +35,8 @@ Explicitly not implemented:
 - formal intervention experiments;
 - migration of old experimental code.
 
-The next controlled-execution stage is:
-
-> implement the schema-preserving DAG bypass protocol.
+The controlled-execution phase covers parallel removal and schema-preserving
+DAG bypass; both remain mock-only protocol plumbing.
 
 ## Frozen scientific hierarchy
 
@@ -124,6 +123,21 @@ never re-run.
 Any failed applicability, replay, coverage, dependency, non-removable-role, or
 provenance check produces an abstaining external `KEEP`. The implementation
 does not add absence messages, infer bypasses, or call a real model.
+
+## Controlled sequential DAG bypass
+
+`DagBypassRunner` applies one pre-registered `BypassRule` to a declared
+`sequential_dag`. It passes one upstream artifact to one downstream required
+input without semantic or format conversion; the only permitted payload edit
+is a pre-declared, collision-free field-name mapping. Nodes whose input hashes
+are unchanged reuse baseline evidence. Only the changed-input downstream
+closure may be executed through an injected `NodeExecutor`, using the original
+role seeds, model/tool/prompt manifests, and aggregation protocol.
+
+The included `MockNodeExecutor` is deterministic and explicitly mock. Missing
+schema evidence, unsafe mappings, irreversible transformations, security gates,
+coverage gaps, executor failures, or replay failures abstain to external
+`KEEP`.
 
 ## Research source of truth
 

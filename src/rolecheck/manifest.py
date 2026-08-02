@@ -50,6 +50,9 @@ class ExperimentManifest(BaseModel):
     aggregator_id: str | None = None
     aggregator_version: str | None = None
     aggregator_config_hash: str | None = None
+    node_executor_id: str | None = None
+    node_executor_version: str | None = None
+    node_executor_config_hash: str | None = None
     seed: int = Field(ge=0)
     predictor_config: Mapping[str, object] = Field(default_factory=dict)
     calibration_config: Mapping[str, object] = Field(default_factory=dict)
@@ -111,6 +114,9 @@ def create_manifest(
     aggregator_id: str | None = None,
     aggregator_version: str | None = None,
     aggregator_config_hash: str | None = None,
+    node_executor_id: str | None = None,
+    node_executor_version: str | None = None,
+    node_executor_config_hash: str | None = None,
     predictor_config: dict[str, object] | None = None,
     calibration_config: dict[str, object] | None = None,
     decision_thresholds: dict[str, float] | None = None,
@@ -136,6 +142,9 @@ def create_manifest(
         aggregator_id=aggregator_id,
         aggregator_version=aggregator_version,
         aggregator_config_hash=aggregator_config_hash,
+        node_executor_id=node_executor_id,
+        node_executor_version=node_executor_version,
+        node_executor_config_hash=node_executor_config_hash,
         seed=seed,
         predictor_config=predictor_config or {},
         calibration_config=calibration_config or {},

@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
-from rolecheck.hashing import canonical_json_hash
+from rolecheck.hashing import canonical_json_hash, role_contract_hash
 from rolecheck.manifest import ExperimentManifest
 from rolecheck.runtime.interfaces import (
     AggregationRequest,
@@ -94,7 +94,11 @@ def _baseline_valid(
     team: CanonicalTeamConfig,
 ) -> bool:
     role_ids = team.execution_protocol.execution_order
-    if baseline.status is not ExecutionStatus.SUCCEEDED or baseline.final_output is None:
+    if (
+        baseline.status is not ExecutionStatus.SUCCEEDED
+        or baseline.final_output is None
+        or baseline.errors
+    ):
         return False
     if (
         baseline.task_id != task.task_id
@@ -129,7 +133,7 @@ def _manifest_matches(
     expected_models = {agent.agent_id: agent.model_id for agent in team.agents}
     expected_prompts = {role.role_id: role.prompt_hash for role in team.roles}
     expected_contracts = {
-        role.role_id: canonical_json_hash(role.model_dump(mode="json"))
+        role.role_id: role_contract_hash(role.model_dump(mode="json"))
         for role in team.roles
     }
     expected_tool_ids = {
