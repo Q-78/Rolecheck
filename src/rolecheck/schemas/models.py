@@ -34,6 +34,7 @@ class SourceType(StrEnum):
     INFERRED = "inferred"
     DEFAULTED = "defaulted"
     UNKNOWN = "unknown"
+    MISSING = "missing"
 
 
 class Visibility(StrEnum):
