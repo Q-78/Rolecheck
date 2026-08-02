@@ -2,6 +2,9 @@
 
 from rolecheck.schemas.models import (
     AgentInstance,
+    AggregationRunKind,
+    AggregationSnapshot,
+    AggregatorIdentity,
     AuthorityLevel,
     BypassRule,
     CanonicalTeamConfig,
@@ -20,6 +23,8 @@ from rolecheck.schemas.models import (
     InterventionRecord,
     KeepValueRecord,
     OutputSpec,
+    ParallelRemovalRecord,
+    ParallelRemovalSafetyReport,
     ProtocolKind,
     RemovalProtocol,
     RemovalStrategy,
@@ -28,6 +33,7 @@ from rolecheck.schemas.models import (
     ResourceLimits,
     RoleAuditReport,
     RoleContract,
+    RoleExecutionMetrics,
     SeedBundle,
     SourceType,
     TaskSpec,
@@ -36,6 +42,9 @@ from rolecheck.schemas.models import (
 
 __all__ = [
     "AgentInstance",
+    "AggregationRunKind",
+    "AggregationSnapshot",
+    "AggregatorIdentity",
     "AuthorityLevel",
     "BypassRule",
     "CanonicalTeamConfig",
@@ -54,6 +63,8 @@ __all__ = [
     "InterventionRecord",
     "KeepValueRecord",
     "OutputSpec",
+    "ParallelRemovalRecord",
+    "ParallelRemovalSafetyReport",
     "ProtocolKind",
     "RemovalProtocol",
     "RemovalStrategy",
@@ -62,6 +73,7 @@ __all__ = [
     "ResourceLimits",
     "RoleAuditReport",
     "RoleContract",
+    "RoleExecutionMetrics",
     "SeedBundle",
     "SourceType",
     "TaskSpec",

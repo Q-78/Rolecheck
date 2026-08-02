@@ -12,9 +12,12 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from rolecheck.hashing import canonical_json_hash
+
 NonEmptyStr = Annotated[str, Field(min_length=1)]
 Probability = Annotated[float, Field(ge=0.0, le=1.0)]
 NonNegativeFloat = Annotated[float, Field(ge=0.0)]
+Sha256Digest = Annotated[str, Field(pattern=r"^sha256:[0-9a-f]{64}$")]
 
 
 class StrictModel(BaseModel):
@@ -88,6 +91,12 @@ class ExecutionStatus(StrEnum):
     SUCCEEDED = "succeeded"
     FAILED = "failed"
     SKIPPED = "skipped"
+
+
+class AggregationRunKind(StrEnum):
+    BASELINE = "baseline"
+    REPLAY = "replay"
+    PARALLEL_REMOVAL = "parallel_removal"
 
 
 class FieldProvenance(StrictModel):
@@ -312,6 +321,165 @@ class SeedBundle(StrictModel):
     predictor_seed: int | None = Field(default=None, ge=0)
 
 
+class AggregatorIdentity(StrictModel):
+    aggregator_id: NonEmptyStr
+    aggregator_version: NonEmptyStr
+    config_hash: Sha256Digest
+
+
+class RoleExecutionMetrics(StrictModel):
+    token_cost: NonNegativeFloat = 0.0
+    latency_ms: NonNegativeFloat = 0.0
+
+
+class AggregationSnapshot(StrictModel):
+    run_id: NonEmptyStr
+    kind: AggregationRunKind
+    ordered_role_ids: Annotated[list[NonEmptyStr], Field(min_length=1)]
+    role_output_hashes: dict[str, Sha256Digest]
+    aggregation_input_hash: Sha256Digest
+    aggregation_seed: int = Field(ge=0)
+    final_output: object
+    final_output_hash: Sha256Digest
+
+    @model_validator(mode="after")
+    def validate_inputs(self) -> AggregationSnapshot:
+        if len(self.ordered_role_ids) != len(set(self.ordered_role_ids)):
+            raise ValueError("aggregation input roles must be unique")
+        if set(self.ordered_role_ids) != set(self.role_output_hashes):
+            raise ValueError("aggregation input roles and response hashes must match")
+        expected_input_hash = canonical_json_hash(
+            [
+                {
+                    "role_id": role_id,
+                    "response_hash": self.role_output_hashes[role_id],
+                }
+                for role_id in self.ordered_role_ids
+            ]
+        )
+        if self.aggregation_input_hash != expected_input_hash:
+            raise ValueError("aggregation input hash does not match ordered inputs")
+        if self.final_output_hash != canonical_json_hash(self.final_output):
+            raise ValueError("final output hash does not match final output")
+        return self
+
+
+class ParallelRemovalSafetyReport(StrictModel):
+    baseline_record_valid: bool
+    manifest_matches: bool
+    parallel_protocol: bool
+    strategy_predeclared: bool
+    frozen_other_responses: bool
+    same_aggregation_protocol: bool
+    new_team_version: bool
+    target_exists: bool
+    target_not_non_removable: bool
+    target_not_final_or_unique_veto: bool
+    independent_execution: bool
+    no_required_target_dependency: bool
+    no_exclusive_required_artifact: bool
+    homogeneous_responses: bool
+    nonempty_retained_responses: bool
+    variable_arity_aggregation: bool
+    replayable_aggregation: bool | None
+    no_coverage_gap: bool
+    no_compensation: bool
+    no_joint_intervention: bool
+    contract_topology_sufficient: bool
+    other_responses_frozen: bool | None
+    no_roles_reexecuted: bool
+    removal_aggregation_succeeded: bool | None
+    valid: bool
+    invalid_reasons: list[NonEmptyStr] = Field(default_factory=list)
+    not_run_checks: list[NonEmptyStr] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_summary(self) -> ParallelRemovalSafetyReport:
+        check_names = [
+            name
+            for name in type(self).model_fields
+            if name not in {"valid", "invalid_reasons", "not_run_checks"}
+        ]
+        failed = [name for name in check_names if getattr(self, name) is False]
+        not_run = [name for name in check_names if getattr(self, name) is None]
+        if self.valid != all(getattr(self, name) is True for name in check_names):
+            raise ValueError("valid must equal the conjunction of all safety checks")
+        if self.valid and self.invalid_reasons:
+            raise ValueError("a valid safety report cannot contain invalid reasons")
+        if not self.valid and not self.invalid_reasons:
+            raise ValueError("an invalid safety report requires reasons")
+        if set(self.invalid_reasons) != set(failed):
+            raise ValueError("invalid reasons must identify exactly the failed checks")
+        if set(self.not_run_checks) != set(not_run):
+            raise ValueError("not-run checks must identify exactly the unexecuted checks")
+        return self
+
+
+class ParallelRemovalRecord(StrictModel):
+    record_id: NonEmptyStr
+    intervention_id: NonEmptyStr
+    experiment_id: NonEmptyStr
+    baseline_run_id: NonEmptyStr
+    task_id: NonEmptyStr
+    team_id: NonEmptyStr
+    input_team_version: NonEmptyStr
+    output_team_version: NonEmptyStr
+    protocol_id: NonEmptyStr
+    removal_protocol_id: NonEmptyStr
+    target_role_id: NonEmptyStr
+    seeds: SeedBundle
+    manifest_hash: Sha256Digest
+    aggregator: AggregatorIdentity
+    role_metrics: dict[str, RoleExecutionMetrics] = Field(default_factory=dict)
+    baseline_aggregation: AggregationSnapshot | None = None
+    replay_aggregation: AggregationSnapshot | None = None
+    removal_aggregation: AggregationSnapshot | None = None
+    reused_role_ids: list[NonEmptyStr] = Field(default_factory=list)
+    reexecuted_role_ids: list[NonEmptyStr] = Field(default_factory=list)
+    safety: ParallelRemovalSafetyReport
+    mock: bool
+    created_at: datetime
+
+    @model_validator(mode="after")
+    def validate_parallel_removal_evidence(self) -> ParallelRemovalRecord:
+        if self.reexecuted_role_ids:
+            raise ValueError("parallel removal cannot re-execute role nodes")
+        if not self.safety.valid:
+            return self
+        if not all(
+            (self.baseline_aggregation, self.replay_aggregation, self.removal_aggregation)
+        ):
+            raise ValueError("valid parallel removal requires all aggregation snapshots")
+        assert self.baseline_aggregation is not None
+        assert self.replay_aggregation is not None
+        assert self.removal_aggregation is not None
+        baseline_ids = self.baseline_aggregation.ordered_role_ids
+        retained_ids = [role_id for role_id in baseline_ids if role_id != self.target_role_id]
+        if self.replay_aggregation.ordered_role_ids != baseline_ids:
+            raise ValueError("replay inputs must match baseline inputs")
+        if (
+            self.replay_aggregation.role_output_hashes
+            != self.baseline_aggregation.role_output_hashes
+        ):
+            raise ValueError("replay response hashes must match baseline hashes")
+        if (
+            self.replay_aggregation.final_output_hash
+            != self.baseline_aggregation.final_output_hash
+        ):
+            raise ValueError("replay output hash must match baseline output hash")
+        if self.removal_aggregation.ordered_role_ids != retained_ids:
+            raise ValueError("removal inputs must be baseline inputs without the target")
+        retained_hashes = {
+            role_id: self.baseline_aggregation.role_output_hashes[role_id]
+            for role_id in retained_ids
+        }
+        if self.removal_aggregation.role_output_hashes != retained_hashes:
+            raise ValueError("retained response hashes must match baseline hashes")
+        if self.reused_role_ids != retained_ids:
+            raise ValueError("reused roles must be exactly the retained roles")
+        return self
+
+
 class ExecutionRecord(StrictModel):
     run_id: NonEmptyStr
     experiment_id: NonEmptyStr
@@ -326,6 +494,7 @@ class ExecutionRecord(StrictModel):
     seeds: SeedBundle
     role_outputs: dict[str, object] = Field(default_factory=dict)
     role_output_hashes: dict[str, str] = Field(default_factory=dict)
+    role_metrics: dict[str, RoleExecutionMetrics] = Field(default_factory=dict)
     final_output: object | None = None
     utility: float | None = None
     token_cost: NonNegativeFloat = 0.0
@@ -337,6 +506,8 @@ class ExecutionRecord(StrictModel):
     def validate_timestamps(self) -> ExecutionRecord:
         if self.finished_at < self.started_at:
             raise ValueError("finished_at must not precede started_at")
+        if self.role_metrics and set(self.role_metrics) != set(self.role_outputs):
+            raise ValueError("role metrics must match recorded role outputs")
         return self
 
 

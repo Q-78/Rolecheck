@@ -21,4 +21,5 @@ def test_mock_runtime_is_deterministic_for_outputs(
     assert first.utility is None
     assert first.run_id == second.run_id
     assert first.role_output_hashes == second.role_output_hashes
+    assert set(first.role_metrics) == {"solver", "critic"}
     assert first.seeds == second.seeds

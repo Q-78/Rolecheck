@@ -10,10 +10,20 @@ from datetime import UTC, datetime, timedelta
 
 from rolecheck.config import MockRuntimeConfig
 from rolecheck.hashing import canonical_json_hash, derive_seed, sha256_text
+from rolecheck.runtime.interfaces import (
+    AggregationRequest,
+    Aggregator,
+    FrozenRoleResponse,
+    isolated_json_copy,
+    isolated_task_copy,
+)
+from rolecheck.runtime.mock_aggregator import MockAggregator
 from rolecheck.schemas import (
+    AggregatorIdentity,
     CanonicalTeamConfig,
     ExecutionRecord,
     ExecutionStatus,
+    RoleExecutionMetrics,
     SeedBundle,
     TaskSpec,
 )
@@ -22,10 +32,15 @@ from rolecheck.schemas import (
 class MockRuntime:
     """Create deterministic placeholder outputs for each configured role."""
 
-    def __init__(self, config: MockRuntimeConfig) -> None:
+    def __init__(
+        self,
+        config: MockRuntimeConfig,
+        aggregator: Aggregator | None = None,
+    ) -> None:
         if not config.enabled:
             raise ValueError("mock runtime is disabled by configuration")
         self._config = config
+        self._aggregator = aggregator or MockAggregator()
 
     def run(
         self,
@@ -43,7 +58,9 @@ class MockRuntime:
 
         role_outputs: dict[str, object] = {}
         role_output_hashes: dict[str, str] = {}
-        for role in team.roles:
+        roles_by_id = {role.role_id: role for role in team.roles}
+        for role_id in team.execution_protocol.execution_order:
+            role = roles_by_id[role_id]
             output = {
                 "mock": True,
                 "task_id": task.task_id,
@@ -56,11 +73,30 @@ class MockRuntime:
             role_outputs[role.role_id] = output
             role_output_hashes[role.role_id] = canonical_json_hash(output)
 
-        final_output = {
-            "mock": True,
-            "ordered_roles": team.execution_protocol.execution_order,
-            "role_output_hashes": role_output_hashes,
-        }
+        aggregator_identity = AggregatorIdentity.model_validate(
+            self._aggregator.identity.model_dump(mode="json")
+        )
+        if aggregator_identity.aggregator_id != team.execution_protocol.aggregation_protocol:
+            raise ValueError("injected aggregator does not match the declared aggregation protocol")
+        final_output = self._aggregator.aggregate(
+            AggregationRequest(
+                task=isolated_task_copy(task),
+                responses=tuple(
+                    FrozenRoleResponse(
+                        role_id=role_id,
+                        output=isolated_json_copy(role_outputs[role_id]),
+                        output_hash=role_output_hashes[role_id],
+                    )
+                    for role_id in team.execution_protocol.execution_order
+                ),
+                aggregation_seed=aggregation_seed,
+            )
+        )
+        if any(
+            canonical_json_hash(role_outputs[role_id]) != role_output_hashes[role_id]
+            for role_id in team.execution_protocol.execution_order
+        ):
+            raise RuntimeError("aggregator mutated frozen baseline responses")
         run_fingerprint = canonical_json_hash(
             {
                 "experiment_id": experiment_id,
@@ -96,6 +132,13 @@ class MockRuntime:
             ),
             role_outputs=role_outputs,
             role_output_hashes=role_output_hashes,
+            role_metrics={
+                role_id: RoleExecutionMetrics(
+                    token_cost=float(self._config.synthetic_tokens_per_role),
+                    latency_ms=self._config.synthetic_latency_ms_per_role,
+                )
+                for role_id in team.execution_protocol.execution_order
+            },
             final_output=final_output,
             utility=None,
             token_cost=token_cost,

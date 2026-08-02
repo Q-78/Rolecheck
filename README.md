@@ -19,6 +19,7 @@ Implemented now:
 - immutable experiment manifests;
 - deterministic Mock Runtime;
 - deterministic English/Chinese Role Contract Normalizer v0.1;
+- controlled parallel single-role removal with frozen-response re-aggregation;
 - schema, configuration, manifest, and mock-runtime tests.
 
 Explicitly not implemented:
@@ -34,9 +35,9 @@ Explicitly not implemented:
 - formal intervention experiments;
 - migration of old experimental code.
 
-The next stage, only after this scaffold passes quality checks, is:
+The next controlled-execution stage is:
 
-> implement the two controlled execution protocols.
+> implement the schema-preserving DAG bypass protocol.
 
 ## Frozen scientific hierarchy
 
@@ -110,6 +111,19 @@ Format names such as JSON, YAML, XML, Markdown, and plain text are recognized on
 ## Mock Runtime warning
 
 `MockRuntime` only validates wiring, deterministic seeds, hashes, records, and manifests. It emits placeholder outputs, reports `utility=None`, and sets `mock=true`. Mock results must never be used as empirical evidence.
+
+## Controlled parallel removal
+
+`ParallelRemovalRunner` implements response-drop + fixed-other-responses +
+same-protocol re-aggregation for declared `parallel_independent` teams. It first
+replays the baseline aggregation from frozen response hashes, then removes one
+target response and re-aggregates with the same injected aggregator identity and
+aggregation seed. The runner has no role-execution callback; retained roles are
+never re-run.
+
+Any failed applicability, replay, coverage, dependency, non-removable-role, or
+provenance check produces an abstaining external `KEEP`. The implementation
+does not add absence messages, infer bypasses, or call a real model.
 
 ## Research source of truth
 
