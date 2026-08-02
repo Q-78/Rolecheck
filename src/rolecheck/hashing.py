@@ -20,6 +20,22 @@ def canonical_json_hash(value: object) -> str:
     return sha256_text(payload)
 
 
+def role_contract_hash(contract_payload: Mapping[str, object]) -> str:
+    """Hash a role contract while preserving pre-required-fields compatibility."""
+
+    normalized = normalize_for_json(contract_payload)
+    if not isinstance(normalized, dict):
+        raise TypeError("role contract payload must be a mapping")
+    for field_name in ("required_inputs", "optional_inputs"):
+        inputs = normalized.get(field_name)
+        if not isinstance(inputs, list):
+            continue
+        for item in inputs:
+            if isinstance(item, dict) and item.get("required_fields") is None:
+                item.pop("required_fields")
+    return canonical_json_hash(normalized)
+
+
 def derive_seed(parent_seed: int, namespace: str, stable_id: str) -> int:
     """Derive a deterministic unsigned 32-bit seed."""
 

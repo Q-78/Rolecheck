@@ -19,6 +19,7 @@ Implemented now:
 - immutable experiment manifests;
 - deterministic Mock Runtime;
 - deterministic English/Chinese Role Contract Normalizer v0.1;
+- controlled parallel single-role removal with frozen-response re-aggregation;
 - schema, configuration, manifest, and mock-runtime tests.
 
 Explicitly not implemented:
@@ -34,9 +35,8 @@ Explicitly not implemented:
 - formal intervention experiments;
 - migration of old experimental code.
 
-The next stage, only after this scaffold passes quality checks, is:
-
-> implement the two controlled execution protocols.
+The controlled-execution phase covers parallel removal and schema-preserving
+DAG bypass; both remain mock-only protocol plumbing.
 
 ## Frozen scientific hierarchy
 
@@ -110,6 +110,34 @@ Format names such as JSON, YAML, XML, Markdown, and plain text are recognized on
 ## Mock Runtime warning
 
 `MockRuntime` only validates wiring, deterministic seeds, hashes, records, and manifests. It emits placeholder outputs, reports `utility=None`, and sets `mock=true`. Mock results must never be used as empirical evidence.
+
+## Controlled parallel removal
+
+`ParallelRemovalRunner` implements response-drop + fixed-other-responses +
+same-protocol re-aggregation for declared `parallel_independent` teams. It first
+replays the baseline aggregation from frozen response hashes, then removes one
+target response and re-aggregates with the same injected aggregator identity and
+aggregation seed. The runner has no role-execution callback; retained roles are
+never re-run.
+
+Any failed applicability, replay, coverage, dependency, non-removable-role, or
+provenance check produces an abstaining external `KEEP`. The implementation
+does not add absence messages, infer bypasses, or call a real model.
+
+## Controlled sequential DAG bypass
+
+`DagBypassRunner` applies one pre-registered `BypassRule` to a declared
+`sequential_dag`. It passes one upstream artifact to one downstream required
+input without semantic or format conversion; the only permitted payload edit
+is a pre-declared, collision-free field-name mapping. Nodes whose input hashes
+are unchanged reuse baseline evidence. Only the changed-input downstream
+closure may be executed through an injected `NodeExecutor`, using the original
+role seeds, model/tool/prompt manifests, and aggregation protocol.
+
+The included `MockNodeExecutor` is deterministic and explicitly mock. Missing
+schema evidence, unsafe mappings, irreversible transformations, security gates,
+coverage gaps, executor failures, or replay failures abstain to external
+`KEEP`.
 
 ## Research source of truth
 
