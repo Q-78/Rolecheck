@@ -18,6 +18,7 @@ Implemented now:
 - standard/JSON-lines logging;
 - immutable experiment manifests;
 - deterministic Mock Runtime;
+- deterministic English/Chinese Role Contract Normalizer v0.1;
 - schema, configuration, manifest, and mock-runtime tests.
 
 Explicitly not implemented:
@@ -35,7 +36,7 @@ Explicitly not implemented:
 
 The next stage, only after this scaffold passes quality checks, is:
 
-> implement the two controlled execution protocols and the Role Contract Normalizer.
+> implement the two controlled execution protocols.
 
 ## Frozen scientific hierarchy
 
@@ -92,7 +93,19 @@ python -m rolecheck configs/base.yaml
 ruff check .
 mypy src
 pytest
+python -m compileall src tests
 ```
+
+## Role Contract Normalizer
+
+`RoleContractNormalizer` preserves the exact source text and deterministically extracts only source-supported English or Chinese role facts. It records per-field spans, provenance status, parse risk, missing or unknown fields, explicit-source conflicts, and unparsed text.
+
+Normalization deliberately separates two representations:
+
+- `RoleContractDraft` holds partial facts. `None` means unavailable or unresolved; an explicit empty list means the source states that there are no entries.
+- `RoleContract` remains the strict, backward-compatible execution contract. `NormalizationResult.contract` is populated only when the draft validates against that strict schema.
+
+Format names such as JSON, YAML, XML, Markdown, and plain text are recognized only when explicitly stated. The Normalizer does not parse those formats, infer schemas from examples, diagnose role defects, translate, summarize, optimize, repair, or fill absent role information.
 
 ## Mock Runtime warning
 
