@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Literal
-
 from pydantic import ConfigDict, Field, field_validator, model_validator
 
-from rolecheck.schemas.models import StrictModel, TaskSpec
+from rolecheck.schemas.models import EvidenceBoundModel, StrictModel, TaskSpec
 
 
 class BenchmarkAdapterIdentity(StrictModel):
@@ -26,7 +24,7 @@ class BenchmarkAdapterIdentity(StrictModel):
         return value
 
 
-class OfflineTaskRecord(StrictModel):
+class OfflineTaskRecord(EvidenceBoundModel):
     """Already-available source material accepted by local adapters.
 
     The local Stage 3 scaffold accepts only hand-authored synthetic records.
@@ -39,8 +37,6 @@ class OfflineTaskRecord(StrictModel):
     task_type: str | None = None
     public_metadata: dict[str, object] = Field(default_factory=dict)
     sensitive_fields: list[str] = Field(default_factory=list)
-    synthetic: Literal[True] = True
-    non_empirical: Literal[True] = True
 
     @field_validator("source_record_id")
     @classmethod
@@ -59,7 +55,7 @@ class OfflineTaskRecord(StrictModel):
         return value
 
 
-class TaskConversionResult(StrictModel):
+class TaskConversionResult(EvidenceBoundModel):
     """Auditable result of one offline source-record conversion."""
 
     adapter: BenchmarkAdapterIdentity
@@ -70,8 +66,6 @@ class TaskConversionResult(StrictModel):
     task: TaskSpec | None = None
     warnings: list[str] = Field(default_factory=list)
     rejection_reasons: list[str] = Field(default_factory=list)
-    synthetic: Literal[True] = True
-    non_empirical: Literal[True] = True
 
     @field_validator("dataset_id", "dataset_revision", "source_record_id")
     @classmethod

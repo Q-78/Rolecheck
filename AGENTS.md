@@ -19,25 +19,25 @@ This file applies to the entire repository. Treat the frozen research documents 
 
 ## Current implementation phase
 
-- The active phase is the local Stage 3 scaffold described in
-  `research_docs/PHASE_3_IMPLEMENTATION_PLAN.md`. It begins only from a mainline
-  revision that already contains the Role Contract Normalizer and both
-  controlled execution protocols.
-- Local work may implement dataset-agnostic Benchmark Adapter interfaces,
-  deterministic offline task ingestion and split manifests, small synthetic
-  fixtures, Runtime Adapter interfaces, and fake/recording runtime
-  implementations that never access a network or invoke a real model.
-- Do not download, construct, or evaluate a formal Benchmark in this phase. Do
-  not implement or execute real model/API calls, defect injection, keep-value
-  or repair-value predictors, repair generators/repairers, AutoGen integration,
-  or AgentInit integration.
+- The active phase is Gate 1 of the approved draft in
+  `research_docs/SERVER_PILOT_PLAN_v0.1.md`, based on a mainline revision that
+  already contains the Role Contract Normalizer, both controlled execution
+  protocols, and the local Stage 3 scaffold.
+- Local work may add the minimum empirical/unevaluated evidence boundary,
+  pinned MMLU-Pro conversion interfaces, immutable runtime-environment
+  identities, and a dependency-injected self-hosted Runtime Adapter protocol.
+  Tests must use hand-authored fixtures and must not invoke a real model.
+- Do not download, materialize, construct, or evaluate MMLU-Pro in Gate 1. Do
+  not implement a concrete model backend or execute real model/API calls,
+  defect injection, keep-value or repair-value predictors, repair
+  generators/repairers, AutoGen integration, or AgentInit integration.
 - Do not migrate old experimental logic into this repository during this phase.
   Synthetic fixtures and Mock/Fake Runtime outputs must be explicitly marked as
   non-empirical and must never be used as research evidence.
-- Stop before the first real Benchmark download or the first real model/API
-  request. Those actions require a separately approved server-pilot plan with
-  frozen revisions, seeds, concurrency, retry, budget, logging, and secret
-  handling.
+- Stop before dependency installation, the first real Benchmark download, or
+  the first real model/API request. Those actions require Gate 1 to be reviewed
+  and merged and the next applicable server-pilot gate to be explicitly
+  approved.
 
 ## Role Contract Normalizer constraints
 

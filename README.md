@@ -7,8 +7,8 @@
 ## Current stage
 
 This repository contains the **research freeze, controlled execution protocols,
-and local Stage 3 offline scaffold**. It does not contain formal experiments or
-a working RoleCheck predictor.
+local Stage 3 scaffold, and Gate 1 empirical evidence boundary**. It does not
+contain formal experiments or a working RoleCheck predictor.
 
 Implemented now:
 
@@ -26,11 +26,16 @@ Implemented now:
 - dataset-agnostic offline task conversion with synthetic/non-empirical provenance;
 - deterministic train/development/test split manifests;
 - manifest-gated Fake and Recording Runtime Adapters with no network or model path;
+- explicit synthetic/non-empirical versus empirical/unevaluated evidence classes;
+- pinned, label-free, I/O-free MMLU-Pro task conversion contracts;
+- immutable self-hosted model, tokenizer, dependency, and hardware identities;
+- a manifest-gated self-hosted Runtime Adapter with an injected backend protocol;
 - schema, configuration, manifest, and mock-runtime tests.
 
 Explicitly not implemented:
 
 - real LLM/API calls;
+- a concrete self-hosted model backend;
 - Benchmark download or dataset construction;
 - defect injection;
 - Static Defect Auditor;
@@ -41,11 +46,12 @@ Explicitly not implemented:
 - formal intervention experiments;
 - migration of old experimental code.
 
-The controlled-execution and Stage 3 components remain mock-only,
-non-empirical plumbing. Stop before downloading or materializing a formal
-Benchmark revision, sending a hosted model request, or loading a self-hosted
-model. Crossing that boundary requires the separately approved server-pilot
-plan described in research_docs/PHASE_3_IMPLEMENTATION_PLAN.md.
+The controlled execution implementations remain mock-only. Gate 1 defines how
+future empirical evidence must be classified and identity-checked, but it does
+not download MMLU-Pro or load Qwen3-8B. Stop before dependency installation,
+Benchmark materialization, a hosted request, or a self-hosted model load. The
+next boundary is governed by
+`research_docs/SERVER_PILOT_PLAN_v0.1.md`.
 
 ## Frozen scientific hierarchy
 
@@ -134,6 +140,26 @@ IDs, and seed hierarchy before invoking MockRuntime. RecordingRuntimeAdapter
 stores isolated in-memory call evidence. Both mark all results synthetic, mock,
 and non-empirical, and neither contains a network, subprocess model-execution,
 or provider-SDK path.
+
+## Gate 1 empirical boundary
+
+`EvidenceClass` distinguishes `synthetic_non_empirical` from
+`empirical_unevaluated` while retaining the legacy `synthetic` and
+`non_empirical` flags with strict consistency checks. Default synthetic split,
+manifest, and request hash payloads remain compatible with Stage 3.
+
+`MMLUProBenchmarkAdapter` accepts only the frozen MMLU-Pro revision and only a
+label-free `MMLUProTaskRecord`. Answer indices, answer letters, gold text, and
+reference rationales live in the separate `MMLUProEvaluationRecord` and cannot
+validate as pre-execution task input. The adapter performs no file or network
+I/O.
+
+`SelfHostedRuntimeAdapter` accepts an injected `SelfHostedExecutionBackend`;
+the repository does not provide an implementation of that backend. Preflight
+binds the team, protocol, split, Prompt and contract hashes, exact model
+assignment, runtime environment, aggregator, and backend identity before any
+backend call. Empirical results must be `mock=false`; Fake Runtime evidence
+must remain synthetic and `mock=true`.
 
 ## Controlled parallel removal
 
