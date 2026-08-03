@@ -19,25 +19,22 @@ This file applies to the entire repository. Treat the frozen research documents 
 
 ## Current implementation phase
 
-- The active phase is Gate 1 of the approved draft in
-  `research_docs/SERVER_PILOT_PLAN_v0.1.md`, based on a mainline revision that
-  already contains the Role Contract Normalizer, both controlled execution
-  protocols, and the local Stage 3 scaffold.
-- Local work may add the minimum empirical/unevaluated evidence boundary,
-  pinned MMLU-Pro conversion interfaces, immutable runtime-environment
-  identities, and a dependency-injected self-hosted Runtime Adapter protocol.
-  Tests must use hand-authored fixtures and must not invoke a real model.
-- Do not download, materialize, construct, or evaluate MMLU-Pro in Gate 1. Do
-  not implement a concrete model backend or execute real model/API calls,
-  defect injection, keep-value or repair-value predictors, repair
-  generators/repairers, AutoGen integration, or AgentInit integration.
-- Do not migrate old experimental logic into this repository during this phase.
-  Synthetic fixtures and Mock/Fake Runtime outputs must be explicitly marked as
-  non-empirical and must never be used as research evidence.
-- Stop before dependency installation, the first real Benchmark download, or
-  the first real model/API request. Those actions require Gate 1 to be reviewed
-  and merged and the next applicable server-pilot gate to be explicitly
-  approved.
+- The active phase is Gate 2-B of the approved bounded server pilot in
+  `research_docs/SERVER_PILOT_PLAN_v0.1.md`. Gate 1 is merged and the audited
+  Gate 2-A server environment is frozen outside Git.
+- Local work may freeze the exact three-role Prompts and Role Contracts, team
+  and protocol configuration, deterministic answer parsing and model-free
+  aggregation, and dependency-injected generation-engine and Runtime Adapter
+  identities. Tests must use hand-authored fixtures and fake generation
+  engines; test outputs are not empirical evidence.
+- Do not download, materialize, construct, or evaluate MMLU-Pro in Gate 2-B.
+  Do not import or load a concrete Transformers model, execute real model/API
+  calls, or create empirical role outputs.
+- Do not implement defect injection, keep-value or repair-value predictors,
+  repair generators/repairers, AutoGen integration, or AgentInit integration.
+  Do not migrate old experimental logic into this repository.
+- Stop before Gate 3 Benchmark materialization. Gate 2-B must pass review and
+  merge separately before any pinned dataset materialization is allowed.
 
 ## Role Contract Normalizer constraints
 
