@@ -7,6 +7,8 @@ from rolecheck.runtime.adapter import (
     RuntimeAdapterResult,
     RuntimeCallRecord,
     RuntimeExecutionRequest,
+    SelfHostedExecutionBackend,
+    SelfHostedRuntimeAdapter,
 )
 from rolecheck.runtime.dag_bypass import DagBypassOutcome, DagBypassRunner
 from rolecheck.runtime.interfaces import (
@@ -42,4 +44,6 @@ __all__ = [
     "RuntimeAdapterResult",
     "RuntimeCallRecord",
     "RuntimeExecutionRequest",
+    "SelfHostedExecutionBackend",
+    "SelfHostedRuntimeAdapter",
 ]

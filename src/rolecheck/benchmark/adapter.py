@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Protocol
+from typing import Protocol, TypeVar
 
 from rolecheck.benchmark.models import (
     BenchmarkAdapterIdentity,
@@ -12,8 +12,10 @@ from rolecheck.benchmark.models import (
 from rolecheck.hashing import canonical_json_hash
 from rolecheck.schemas import TaskSpec
 
+SourceRecordT = TypeVar("SourceRecordT", contravariant=True)
 
-class BenchmarkAdapter(Protocol):
+
+class BenchmarkAdapter(Protocol[SourceRecordT]):
     """Convert already-available records without I/O or evaluation."""
 
     @property
@@ -25,7 +27,7 @@ class BenchmarkAdapter(Protocol):
     @property
     def dataset_revision(self) -> str: ...
 
-    def convert(self, record: OfflineTaskRecord) -> TaskConversionResult: ...
+    def convert(self, record: SourceRecordT) -> TaskConversionResult: ...
 
 
 class SyntheticBenchmarkAdapter:

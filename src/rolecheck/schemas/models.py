@@ -6,11 +6,12 @@ role auditing, value prediction, repair generation, or real model execution.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import datetime
 from enum import StrEnum
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, field_validator, model_validator
 
 from rolecheck.hashing import canonical_json_hash
 
@@ -18,12 +19,74 @@ NonEmptyStr = Annotated[str, Field(min_length=1)]
 Probability = Annotated[float, Field(ge=0.0, le=1.0)]
 NonNegativeFloat = Annotated[float, Field(ge=0.0)]
 Sha256Digest = Annotated[str, Field(pattern=r"^sha256:[0-9a-f]{64}$")]
+_PRE_EXECUTION_FORBIDDEN_METADATA_KEYS = frozenset(
+    {
+        "answer",
+        "answer_index",
+        "answer_letter",
+        "correctness",
+        "counterfactual_outcome",
+        "execution_trace",
+        "final_output",
+        "gold",
+        "gold_answer",
+        "intervention_outcome",
+        "label",
+        "labels",
+        "reference_chain_of_thought",
+        "reference_cot",
+        "removal_outcome",
+        "role_output",
+        "role_outputs",
+        "score",
+        "utility",
+    }
+)
 
 
 class StrictModel(BaseModel):
     """Base model with strict unknown-field rejection."""
 
     model_config = ConfigDict(extra="forbid", validate_assignment=True)
+
+
+class EvidenceClass(StrEnum):
+    """Whether evidence is synthetic or real but not yet evaluated."""
+
+    SYNTHETIC_NON_EMPIRICAL = "synthetic_non_empirical"
+    EMPIRICAL_UNEVALUATED = "empirical_unevaluated"
+
+
+class EvidenceBoundModel(StrictModel):
+    """Compatibility fields governed by one explicit evidence classification."""
+
+    evidence_class: EvidenceClass = EvidenceClass.SYNTHETIC_NON_EMPIRICAL
+    synthetic: StrictBool = True
+    non_empirical: StrictBool = True
+
+    @model_validator(mode="before")
+    @classmethod
+    def populate_compatibility_flags(cls, value: Any) -> Any:
+        if not isinstance(value, Mapping):
+            return value
+        payload = dict(value)
+        default_evidence_class = cls.model_fields["evidence_class"].default
+        evidence_class = EvidenceClass(
+            payload.get("evidence_class", default_evidence_class)
+        )
+        expected = evidence_class is EvidenceClass.SYNTHETIC_NON_EMPIRICAL
+        payload.setdefault("synthetic", expected)
+        payload.setdefault("non_empirical", expected)
+        return payload
+
+    @model_validator(mode="after")
+    def validate_evidence_flags(self) -> EvidenceBoundModel:
+        expected = self.evidence_class is EvidenceClass.SYNTHETIC_NON_EMPIRICAL
+        if self.synthetic is not expected or self.non_empirical is not expected:
+            raise ValueError(
+                "synthetic and non_empirical must match evidence_class"
+            )
+        return self
 
 
 class InformationSetting(StrEnum):
@@ -143,12 +206,50 @@ class ResourceLimits(StrictModel):
     max_tool_calls: int | None = Field(default=None, ge=0)
 
 
+def _find_forbidden_metadata_paths(
+    value: object,
+    *,
+    prefix: str = "public_metadata",
+) -> list[str]:
+    paths: list[str] = []
+    if isinstance(value, Mapping):
+        for key, item in value.items():
+            normalized_key = str(key).strip().lower().replace("-", "_").replace(" ", "_")
+            path = f"{prefix}.{key}"
+            if normalized_key in _PRE_EXECUTION_FORBIDDEN_METADATA_KEYS:
+                paths.append(path)
+            paths.extend(_find_forbidden_metadata_paths(item, prefix=path))
+    elif isinstance(value, (list, tuple)):
+        for index, item in enumerate(value):
+            paths.extend(
+                _find_forbidden_metadata_paths(
+                    item,
+                    prefix=f"{prefix}[{index}]",
+                )
+            )
+    return paths
+
+
 class TaskSpec(StrictModel):
     task_id: NonEmptyStr
     task_text: NonEmptyStr
     task_type: str | None = None
     public_metadata: dict[str, object] = Field(default_factory=dict)
     sensitive_fields: list[str] = Field(default_factory=list)
+
+    @field_validator("public_metadata")
+    @classmethod
+    def reject_execution_and_evaluation_metadata(
+        cls,
+        value: dict[str, object],
+    ) -> dict[str, object]:
+        forbidden_paths = _find_forbidden_metadata_paths(value)
+        if forbidden_paths:
+            raise ValueError(
+                "pre-execution metadata contains forbidden fields: "
+                + ", ".join(forbidden_paths)
+            )
+        return value
 
 
 class RoleContract(StrictModel):
@@ -346,6 +447,28 @@ class RuntimeAdapterIdentity(StrictModel):
     runtime_id: NonEmptyStr
     runtime_version: NonEmptyStr
     config_hash: Sha256Digest
+
+
+class RuntimeEnvironmentIdentity(StrictModel):
+    """Immutable hashes for one self-hosted empirical runtime environment."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    model_id: NonEmptyStr
+    model_revision: NonEmptyStr
+    model_assignment_id: NonEmptyStr
+    model_artifact_manifest_hash: Sha256Digest
+    tokenizer_hash: Sha256Digest
+    generation_config_hash: Sha256Digest
+    dependency_lock_hash: Sha256Digest
+    hardware_inventory_hash: Sha256Digest
+
+    @field_validator("model_id", "model_revision", "model_assignment_id")
+    @classmethod
+    def reject_blank_identity(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("runtime environment identifiers cannot be blank")
+        return value
 
 
 class ArtifactSnapshot(StrictModel):

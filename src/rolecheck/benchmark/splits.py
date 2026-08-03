@@ -9,7 +9,7 @@ from pydantic import ConfigDict, Field, field_validator, model_validator
 
 from rolecheck.benchmark.models import BenchmarkAdapterIdentity
 from rolecheck.hashing import canonical_json_hash
-from rolecheck.schemas.models import StrictModel
+from rolecheck.schemas.models import EvidenceBoundModel, EvidenceClass, StrictModel
 
 PartitionName = Literal["train", "development", "test"]
 _PARTITION_ORDER: tuple[PartitionName, ...] = ("train", "development", "test")
@@ -62,7 +62,7 @@ class TaskPartition(StrictModel):
         return self
 
 
-class TaskSplitManifest(StrictModel):
+class TaskSplitManifest(EvidenceBoundModel):
     """Canonical train/development/test assignment evidence."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
@@ -75,8 +75,6 @@ class TaskSplitManifest(StrictModel):
     source_task_ids_hash: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
     partitions: tuple[TaskPartition, TaskPartition, TaskPartition]
     split_hash: str = Field(pattern=r"^sha256:[0-9a-f]{64}$")
-    synthetic: Literal[True] = True
-    non_empirical: Literal[True] = True
 
     @field_validator("dataset_id", "dataset_revision")
     @classmethod
@@ -121,6 +119,7 @@ class TaskSplitManifest(StrictModel):
             weights=self.weights,
             source_task_ids_hash=self.source_task_ids_hash,
             partitions=self.partitions,
+            evidence_class=self.evidence_class,
         ):
             raise ValueError("split hash does not match canonical manifest content")
         return self
@@ -134,6 +133,7 @@ def create_task_split_manifest(
     adapter: BenchmarkAdapterIdentity,
     seed: int,
     weights: SplitWeights | None = None,
+    evidence_class: EvidenceClass = EvidenceClass.SYNTHETIC_NON_EMPIRICAL,
 ) -> TaskSplitManifest:
     """Assign validated identifiers without consulting task outcomes or labels."""
 
@@ -176,8 +176,10 @@ def create_task_split_manifest(
         weights=selected_weights,
         source_task_ids_hash=source_hash,
         partitions=partition_tuple,
+        evidence_class=evidence_class,
     )
     return TaskSplitManifest(
+        evidence_class=evidence_class,
         dataset_id=dataset_id,
         dataset_revision=dataset_revision,
         adapter=adapter,
@@ -221,19 +223,22 @@ def _split_hash_payload(
     weights: SplitWeights,
     source_task_ids_hash: str,
     partitions: tuple[TaskPartition, TaskPartition, TaskPartition],
+    evidence_class: EvidenceClass,
 ) -> str:
-    return canonical_json_hash(
-        {
-            "dataset_id": dataset_id,
-            "dataset_revision": dataset_revision,
-            "adapter": adapter.model_dump(mode="json"),
-            "seed": seed,
-            "weights": weights.model_dump(mode="json"),
-            "source_task_ids_hash": source_task_ids_hash,
-            "partitions": [
-                partition.model_dump(mode="json") for partition in partitions
-            ],
-            "synthetic": True,
-            "non_empirical": True,
-        }
-    )
+    synthetic = evidence_class is EvidenceClass.SYNTHETIC_NON_EMPIRICAL
+    payload: dict[str, object] = {
+        "dataset_id": dataset_id,
+        "dataset_revision": dataset_revision,
+        "adapter": adapter.model_dump(mode="json"),
+        "seed": seed,
+        "weights": weights.model_dump(mode="json"),
+        "source_task_ids_hash": source_task_ids_hash,
+        "partitions": [
+            partition.model_dump(mode="json") for partition in partitions
+        ],
+        "synthetic": synthetic,
+        "non_empirical": synthetic,
+    }
+    if evidence_class is EvidenceClass.EMPIRICAL_UNEVALUATED:
+        payload["evidence_class"] = evidence_class.value
+    return canonical_json_hash(payload)
