@@ -155,11 +155,31 @@ validate as pre-execution task input. The adapter performs no file or network
 I/O.
 
 `SelfHostedRuntimeAdapter` accepts an injected `SelfHostedExecutionBackend`;
-the repository does not provide an implementation of that backend. Preflight
-binds the team, protocol, split, Prompt and contract hashes, exact model
-assignment, runtime environment, aggregator, and backend identity before any
-backend call. Empirical results must be `mock=false`; Fake Runtime evidence
+preflight binds the team, protocol, split, Prompt and contract hashes, exact
+model assignment, runtime environment, aggregator, and backend identity before
+any backend call. Empirical results must be `mock=false`; Fake Runtime evidence
 must remain synthetic and `mock=true`.
+
+## Gate 2-B execution freeze
+
+`rolecheck.pilot` freezes the three independent MMLU-Pro role Prompts,
+normalized Role Contracts, CanonicalTeamConfig, one-round protocol, Qwen3-8B
+generation condition, and audited server-environment boundary. The core
+RoleContract and execution Schemas are unchanged.
+
+The terminal-answer parser accepts only a final `Answer: <LETTER>` line in the
+available option range. `DeterministicMajorityAggregator` performs strict
+majority voting with the frozen lexicographic tie rule, excludes invalid votes
+without compensation, accepts variable response counts, and never calls a
+model.
+
+`PilotExecutionBackend` is orchestration around an identity-checked injected
+`LocalGenerationEngine`. It renders independent role requests and retains raw
+token IDs, decoded output, separated thinking/final content, parse evidence,
+seeds, hashes, token counts, and latency. No Transformers implementation,
+dataset loader, model load, or real generation call is included. Exact hashes
+and the Gate 3 hard stop are recorded in
+`research_docs/PILOT_EXECUTION_FREEZE_v0.1.md`.
 
 ## Controlled parallel removal
 
