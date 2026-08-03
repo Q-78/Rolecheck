@@ -29,6 +29,7 @@
 - Gate 2-B implementation commit: `f4790df59924609630926a623e9c8fc7a93cb00c`;
 - Gate 2-B PR: [#7 Freeze Gate 2-B pilot execution](https://github.com/Q-78/Rolecheck/pull/7);
 - PR #7 state: MERGED; merge commit `9737f2efbff0e0cd314db24835c7e40094c35536`;
+- current handoff PR: [#8 Add current RoleCheck handoff](https://github.com/Q-78/Rolecheck/pull/8), OPEN and DRAFT at handoff time;
 - PR #7 GitHub Actions: Python 3.11, 3.12, and 3.13 all passed.
 
 Gate 2-B is complete. `AGENTS.md` intentionally retains the Gate 3 hard stop until a separate transition is reviewed and explicitly approved.
@@ -153,7 +154,7 @@ python -m compileall src tests      PASS
 ### 8.1 Close out the handoff before Gate 3
 
 1. Verify that PR #7 is merged at `9737f2efbff0e0cd314db24835c7e40094c35536`.
-2. Review and merge the documentation-only current-handoff PR.
+2. Review and merge the documentation-only PR #8.
 3. Fast-forward local and server checkouts to the resulting `main` revision and record it.
 4. Confirm the Gate 2-A artifacts and model hashes still verify without loading the model.
 5. Obtain explicit approval for Gate 3 and update the active-phase guard separately.
@@ -206,7 +207,7 @@ Gate 3 最小工作：
 请遵守根目录 AGENTS.md，并完整阅读 CURRENT_HANDOFF.md 及其第 1 节列出的研究文档。然后：
 
 1. Verify that GitHub PR #7 is merged at `9737f2efbff0e0cd314db24835c7e40094c35536`;
-2. inspect the documentation-only current-handoff PR and the current `main`;
+2. inspect the documentation-only PR #8 and the current `main`;
 3. rerun the four required local checks;
 4. report whether the handoff PR can be merged;
 5. do not enter Gate 3, download MMLU-Pro, or load Qwen3-8B without my explicit confirmation.
@@ -232,6 +233,7 @@ GitHub 状态：
 ```bash
 gh pr view 7 --repo Q-78/Rolecheck \
   --json number,title,state,isDraft,mergeStateStatus,statusCheckRollup,url
+gh pr view 8 --repo Q-78/Rolecheck --json number,title,state,isDraft,mergeStateStatus,statusCheckRollup,url
 ```
 
 ## 12. 交接完成标准
