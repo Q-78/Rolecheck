@@ -26,6 +26,7 @@
 - 仓库：`Q-78/Rolecheck`；
 - merged `main` checkpoint: `9737f2efbff0e0cd314db24835c7e40094c35536`;
 - current handoff branch: `codex/current-handoff`;
+- superseded snapshot: `origin/codex/gate-2b-execution-freeze` contains post-merge handoff commit `82426ee`; use PR #8 as the canonical handoff instead;
 - Gate 2-B implementation commit: `f4790df59924609630926a623e9c8fc7a93cb00c`;
 - Gate 2-B PR: [#7 Freeze Gate 2-B pilot execution](https://github.com/Q-78/Rolecheck/pull/7);
 - PR #7 state: MERGED; merge commit `9737f2efbff0e0cd314db24835c7e40094c35536`;
