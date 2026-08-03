@@ -78,25 +78,34 @@ class MockRuntime:
         )
         if aggregator_identity.aggregator_id != team.execution_protocol.aggregation_protocol:
             raise ValueError("injected aggregator does not match the declared aggregation protocol")
-        final_output = self._aggregator.aggregate(
-            AggregationRequest(
-                task=isolated_task_copy(task),
-                responses=tuple(
-                    FrozenRoleResponse(
-                        role_id=role_id,
-                        output=isolated_json_copy(role_outputs[role_id]),
-                        output_hash=role_output_hashes[role_id],
-                    )
-                    for role_id in team.execution_protocol.execution_order
-                ),
-                aggregation_seed=aggregation_seed,
+        status = ExecutionStatus.SUCCEEDED
+        errors: list[str] = []
+        final_output: object | None
+        try:
+            final_output = self._aggregator.aggregate(
+                AggregationRequest(
+                    task=isolated_task_copy(task),
+                    responses=tuple(
+                        FrozenRoleResponse(
+                            role_id=role_id,
+                            output=isolated_json_copy(role_outputs[role_id]),
+                            output_hash=role_output_hashes[role_id],
+                        )
+                        for role_id in team.execution_protocol.execution_order
+                    ),
+                    aggregation_seed=aggregation_seed,
+                )
             )
-        )
-        if any(
-            canonical_json_hash(role_outputs[role_id]) != role_output_hashes[role_id]
-            for role_id in team.execution_protocol.execution_order
-        ):
-            raise RuntimeError("aggregator mutated frozen baseline responses")
+            if any(
+                canonical_json_hash(role_outputs[role_id])
+                != role_output_hashes[role_id]
+                for role_id in team.execution_protocol.execution_order
+            ):
+                raise RuntimeError("aggregator mutated frozen baseline responses")
+        except Exception as exc:
+            final_output = None
+            status = ExecutionStatus.FAILED
+            errors = [f"mock_aggregation_error:{type(exc).__name__}"]
         run_fingerprint = canonical_json_hash(
             {
                 "experiment_id": experiment_id,
@@ -123,7 +132,7 @@ class MockRuntime:
             removal_protocol_id=team.removal_protocol.removal_protocol_id,
             started_at=started_at,
             finished_at=finished_at,
-            status=ExecutionStatus.SUCCEEDED,
+            status=status,
             seeds=SeedBundle(
                 experiment_seed=experiment_seed,
                 task_seed=task_seed,
@@ -144,12 +153,18 @@ class MockRuntime:
             token_cost=token_cost,
             latency_ms=latency_ms,
             mock=True,
-            errors=[],
+            errors=errors,
         )
 
     @property
     def runtime_id(self) -> str:
         return self._config.runtime_id
+
+    @property
+    def aggregator_identity(self) -> AggregatorIdentity:
+        return AggregatorIdentity.model_validate(
+            self._aggregator.identity.model_dump(mode="json")
+        )
 
     @staticmethod
     def warning_hash() -> str:

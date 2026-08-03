@@ -6,7 +6,9 @@
 
 ## Current stage
 
-This repository is the **research-freeze and foundation initialization** deliverable. It does not contain formal experiments or a working RoleCheck predictor.
+This repository contains the **research freeze, controlled execution protocols,
+and local Stage 3 offline scaffold**. It does not contain formal experiments or
+a working RoleCheck predictor.
 
 Implemented now:
 
@@ -20,6 +22,10 @@ Implemented now:
 - deterministic Mock Runtime;
 - deterministic English/Chinese Role Contract Normalizer v0.1;
 - controlled parallel single-role removal with frozen-response re-aggregation;
+- controlled schema-preserving sequential DAG bypass;
+- dataset-agnostic offline task conversion with synthetic/non-empirical provenance;
+- deterministic train/development/test split manifests;
+- manifest-gated Fake and Recording Runtime Adapters with no network or model path;
 - schema, configuration, manifest, and mock-runtime tests.
 
 Explicitly not implemented:
@@ -35,8 +41,11 @@ Explicitly not implemented:
 - formal intervention experiments;
 - migration of old experimental code.
 
-The controlled-execution phase covers parallel removal and schema-preserving
-DAG bypass; both remain mock-only protocol plumbing.
+The controlled-execution and Stage 3 components remain mock-only,
+non-empirical plumbing. Stop before downloading or materializing a formal
+Benchmark revision, sending a hosted model request, or loading a self-hosted
+model. Crossing that boundary requires the separately approved server-pilot
+plan described in research_docs/PHASE_3_IMPLEMENTATION_PLAN.md.
 
 ## Frozen scientific hierarchy
 
@@ -110,6 +119,21 @@ Format names such as JSON, YAML, XML, Markdown, and plain text are recognized on
 ## Mock Runtime warning
 
 `MockRuntime` only validates wiring, deterministic seeds, hashes, records, and manifests. It emits placeholder outputs, reports `utility=None`, and sets `mock=true`. Mock results must never be used as empirical evidence.
+
+## Stage 3 offline adapters
+
+SyntheticBenchmarkAdapter converts only already-available, hand-authored
+synthetic records into TaskSpec values. create_task_split_manifest assigns
+validated task identifiers by a recorded seed and verifies exhaustive,
+disjoint partitions and canonical hashes. Neither interface accepts labels,
+gold answers, role outputs, traces, or counterfactual outcomes.
+
+FakeRuntimeAdapter verifies the frozen task split, complete team hash,
+runtime/aggregator identities, model/tool/Prompt/contract identities, protocol
+IDs, and seed hierarchy before invoking MockRuntime. RecordingRuntimeAdapter
+stores isolated in-memory call evidence. Both mark all results synthetic, mock,
+and non-empirical, and neither contains a network, subprocess model-execution,
+or provider-SDK path.
 
 ## Controlled parallel removal
 

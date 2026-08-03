@@ -40,7 +40,10 @@ class ExperimentManifest(BaseModel):
     dataset_revision: str
     task_split_hash: str
     initializer_id: str
+    team_config_hash: str | None = None
     runtime_id: str
+    runtime_version: str | None = None
+    runtime_config_hash: str | None = None
     protocol_id: str
     removal_protocol_id: str
     model_versions: Mapping[str, str] = Field(default_factory=dict)
@@ -102,7 +105,10 @@ def create_manifest(
     dataset_revision: str,
     task_split_hash: str,
     initializer_id: str,
+    team_config_hash: str | None = None,
     runtime_id: str,
+    runtime_version: str | None = None,
+    runtime_config_hash: str | None = None,
     protocol_id: str,
     removal_protocol_id: str,
     seed: int,
@@ -132,7 +138,10 @@ def create_manifest(
         dataset_revision=dataset_revision,
         task_split_hash=task_split_hash,
         initializer_id=initializer_id,
+        team_config_hash=team_config_hash,
         runtime_id=runtime_id,
+        runtime_version=runtime_version,
+        runtime_config_hash=runtime_config_hash,
         protocol_id=protocol_id,
         removal_protocol_id=removal_protocol_id,
         model_versions=model_versions or {},
