@@ -7,7 +7,11 @@
 ## Current stage
 
 This repository contains the **research freeze, controlled execution protocols,
-local Stage 3 scaffold, and Gate 1 empirical evidence boundary**. It does not
+local Stage 3 scaffold, Gate 1 empirical evidence boundary, and the Gate 2-B
+Pilot execution freeze**. Gate 2-B was merged through PR #7; Gate 3 has not
+started and still requires explicit approval. The operational status and new-conversation
+instructions are recorded in [`CURRENT_HANDOFF.md`](CURRENT_HANDOFF.md).
+It does not
 contain formal experiments or a working RoleCheck predictor.
 
 Implemented now:
@@ -30,6 +34,10 @@ Implemented now:
 - pinned, label-free, I/O-free MMLU-Pro task conversion contracts;
 - immutable self-hosted model, tokenizer, dependency, and hardware identities;
 - a manifest-gated self-hosted Runtime Adapter with an injected backend protocol;
+- three frozen independent Pilot roles and their normalized Role Contracts;
+- deterministic terminal-answer parsing and model-free majority aggregation;
+- an identity-checked dependency-injected Pilot execution backend interface,
+  with fake-engine tests only;
 - schema, configuration, manifest, and mock-runtime tests.
 
 Explicitly not implemented:
@@ -46,11 +54,12 @@ Explicitly not implemented:
 - formal intervention experiments;
 - migration of old experimental code.
 
-The controlled execution implementations remain mock-only. Gate 1 defines how
-future empirical evidence must be classified and identity-checked, but it does
-not download MMLU-Pro or load Qwen3-8B. Stop before dependency installation,
-Benchmark materialization, a hosted request, or a self-hosted model load. The
-next boundary is governed by
+Concrete model execution remains unimplemented; automated tests use only Mock
+or Fake engines and their outputs are not research evidence. Gate 1 defines how
+future empirical evidence must be classified and identity-checked, and Gate 2-B
+freezes the execution configuration without downloading MMLU-Pro or loading
+Qwen3-8B. Stop before Benchmark materialization or any model load until a
+separate Gate 3 transition is reviewed and explicitly approved. The next boundary is governed by
 `research_docs/SERVER_PILOT_PLAN_v0.1.md`.
 
 ## Frozen scientific hierarchy

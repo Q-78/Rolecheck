@@ -1,3 +1,12 @@
+> [!IMPORTANT]
+> **当前实施状态请先阅读 [`CURRENT_HANDOFF.md`](CURRENT_HANDOFF.md)。**
+> 本文保存完整研究背景，但其 2026-08-01 操作状态已经被后续 Gate 1、
+> Gate 2-A 和 Gate 2-B 工作取代。冻结研究决策仍以 `AGENTS.md` 指定的
+> `research_docs` 文档为准。新对话不得仅依据本文判断当前实验门禁。
+>
+> As of 2026-08-04, use `CURRENT_HANDOFF.md` for the active branch, PR,
+> server freeze, validation evidence, and the exact next-step boundary.
+
 # RoleCheck 研究项目交接与后续对话上下文
 
 **项目暂定名称：** RoleCheck  
