@@ -2,7 +2,7 @@
 
 **交接日期：** 2026-08-04
 **适用对象：** 接手当前仓库开发、GitHub 审查和服务器实验的新 Codex 对话
-**Current gate:** Gate 6 and Gate 6.1A are published on `main`. Gate 6.2 structured-score signal redesign is implemented offline on `design/gate-6-2-signal-redesign`; all 187 tests and independent synthetic verification pass. Gate 6.2A real-model Smoke remains prohibited until Gate 6.2 is independently reviewed and merged. Older gate-status text below is historical context.
+**Current gate:** Gate 6.2A is a frozen NO-GO: 25/42 outputs were schema-valid versus the required 42/42. Gate 6.2B and later Predictor-readiness stages are prohibited. See `research_docs/GATE_6_2A_STRUCTURED_SCORE_SMOKE_RESULT.md`.
 
 ## 1. 新对话首先做什么
 
