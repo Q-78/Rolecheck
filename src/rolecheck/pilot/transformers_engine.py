@@ -85,6 +85,10 @@ class Qwen3SingleGpuGenerationEngine:
         torch = self._torch
         torch.manual_seed(request.role_seed)
         torch.cuda.manual_seed_all(request.role_seed)
+        config = dict(request.generation_config)
+        enable_thinking = config.pop("enable_thinking", True)
+        if not isinstance(enable_thinking, bool):
+            raise ValueError("enable_thinking must be an explicit boolean")
         messages = [
             {"role": "system", "content": request.prompt.system_prompt},
             {"role": "user", "content": request.prompt.user_prompt},
@@ -93,12 +97,10 @@ class Qwen3SingleGpuGenerationEngine:
             messages,
             tokenize=True,
             add_generation_prompt=True,
-            enable_thinking=True,
+            enable_thinking=enable_thinking,
             return_tensors="pt",
         ).to("cuda:0")
         attention_mask = torch.ones_like(input_ids, dtype=torch.long, device=input_ids.device)
-        config = dict(request.generation_config)
-        config.pop("enable_thinking", None)
         torch.cuda.synchronize()
         started = time.perf_counter()
         with torch.inference_mode():
