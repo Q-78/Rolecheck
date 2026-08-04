@@ -114,7 +114,6 @@ def main() -> None:
         "gpu_uuid": GPU_UUID,
         "budget_seconds": BUDGET,
         "model": str(MODEL),
-        "gold_loaded": False,
     }
     audit_preexecution_payload(plan)
     ROOT.mkdir(parents=True)
