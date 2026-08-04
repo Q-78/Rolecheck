@@ -19,20 +19,19 @@ This file applies to the entire repository. Treat the frozen research documents 
 
 ## Current implementation phase
 
-- The active phase is Gate 4 review of the approved bounded server pilot in
-  `research_docs/SERVER_PILOT_PLAN_v0.1.md`. Gate 3 is merged; the first BF16
-  model load and one-task, one-role smoke artifacts are frozen outside Git and
-  recorded in `research_docs/GATE4_SMOKE_FREEZE_v0.2.md`.
-- Local work may validate the concrete offline single-GPU generation engine,
-  smoke runner, immutable execution evidence, parser output, and unload state.
-  Tests must not load a concrete model; test outputs are not empirical evidence.
-- Do not run the 14-task dry run, execute multiple roles, aggregate empirical
-  outputs, perform removal/replay, or evaluate MMLU-Pro answers.
+- The active phase is Pilot v0.3 Gate 5 pass review under
+  `research_docs/PILOT_V0.3_MANIFEST_REPLACEMENT_RESULT.md`. Gate 4 is merged. Pilot v0.1 and v0.2 failure evidence remains immutable. Pilot v0.3 passed
+  Gate 5 only after an explicitly disclosed post-hoc task replacement.
+- Local work may validate the revised Pilot14/Pilot56 manifests, GPU identity,
+  Gate 5 artifacts, and post-hoc selection limitation. Tests must not load a
+  concrete model; test outputs are not empirical evidence.
+- Do not overwrite or mix Pilot v0.1 artifacts, selectively rerun one task,
+  change parser or prompts, perform removal, enter Gate 6, or evaluate answers.
 - Do not implement defect injection, keep-value or repair-value predictors,
   repair generators/repairers, AutoGen integration, or AgentInit integration.
   Do not migrate old experimental logic into this repository.
-- Stop before Gate 5 dry-run execution. Gate 4 must pass review and merge
-  separately before any 14-task or multi-role execution is allowed.
+- Stop before Gate 6 execution. Pilot v0.3 Gate 5 must pass, be independently
+  reviewed, and merge separately before any 56-task or removal execution.
 
 ## Role Contract Normalizer constraints
 
