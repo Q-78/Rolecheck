@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Protocol
@@ -64,13 +65,18 @@ def answer_parser_identity() -> RuntimeAdapterIdentity:
     )
 
 
-def required_generation_engine_identity() -> RuntimeAdapterIdentity:
-    """Identity a future Gate 4 Transformers engine must expose exactly."""
+def generation_engine_identity(
+    *,
+    generation_config: Mapping[str, object],
+    runtime_version: str,
+    cuda_visible_devices: str = "0",
+) -> RuntimeAdapterIdentity:
+    """Build an identity for one explicitly versioned Pilot generation condition."""
 
     environment = pilot_runtime_environment()
     return RuntimeAdapterIdentity(
         runtime_id="rolecheck.transformers.qwen3_8b.single_gpu",
-        runtime_version=PILOT_VERSION,
+        runtime_version=runtime_version,
         config_hash=canonical_json_hash(
             {
                 "interface_contract": "two_message_chat_to_raw_generation_v0.1",
@@ -78,12 +84,12 @@ def required_generation_engine_identity() -> RuntimeAdapterIdentity:
                 "model_artifact_manifest_hash": environment.model_artifact_manifest_hash,
                 "tokenizer_hash": environment.tokenizer_hash,
                 "generation_config_file_hash": environment.generation_config_hash,
-                "generation_config": dict(PILOT_GENERATION_CONFIG),
+                "generation_config": dict(generation_config),
                 "dtype": "bfloat16",
                 "rope_scaling": None,
                 "concurrent_role_generations": 1,
                 "chat_template_applied_by_engine": True,
-                "cuda_visible_devices": "0",
+                "cuda_visible_devices": cuda_visible_devices,
                 "model_processes": 1,
                 "concurrent_tasks": 1,
                 "tensor_parallelism": False,
@@ -94,6 +100,14 @@ def required_generation_engine_identity() -> RuntimeAdapterIdentity:
                 "network_during_inference": False,
             }
         ),
+    )
+
+
+def required_generation_engine_identity() -> RuntimeAdapterIdentity:
+    """Identity the frozen Pilot v0.1 engine must expose exactly."""
+
+    return generation_engine_identity(
+        generation_config=PILOT_GENERATION_CONFIG, runtime_version=PILOT_VERSION
     )
 
 

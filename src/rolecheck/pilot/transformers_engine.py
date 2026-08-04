@@ -4,10 +4,16 @@ from __future__ import annotations
 
 import importlib
 import time
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from rolecheck.pilot.execution import RoleGenerationRequest, required_generation_engine_identity
+from rolecheck.pilot.config import PILOT_VERSION
+from rolecheck.pilot.execution import (
+    RoleGenerationRequest,
+    generation_engine_identity,
+    required_generation_engine_identity,
+)
 from rolecheck.pilot.models import RawGeneration
 from rolecheck.schemas import RuntimeAdapterIdentity
 
@@ -15,7 +21,14 @@ from rolecheck.schemas import RuntimeAdapterIdentity
 class Qwen3SingleGpuGenerationEngine:
     """Load the frozen Qwen3-8B snapshot once on the sole visible GPU."""
 
-    def __init__(self, *, model_path: Path) -> None:
+    def __init__(
+        self,
+        *,
+        model_path: Path,
+        generation_config: Mapping[str, object] | None = None,
+        runtime_version: str = PILOT_VERSION,
+        cuda_visible_devices: str = "0",
+    ) -> None:
         if not model_path.is_dir():
             raise ValueError("frozen model snapshot directory is missing")
         torch: Any = importlib.import_module("torch")
@@ -23,6 +36,15 @@ class Qwen3SingleGpuGenerationEngine:
         if not torch.cuda.is_available() or torch.cuda.device_count() != 1:
             raise RuntimeError("Gate 4 requires exactly one visible CUDA GPU")
         self._torch = torch
+        self._identity = (
+            required_generation_engine_identity()
+            if generation_config is None
+            else generation_engine_identity(
+                generation_config=generation_config,
+                runtime_version=runtime_version,
+                cuda_visible_devices=cuda_visible_devices,
+            )
+        )
         self._tokenizer = transformers.AutoTokenizer.from_pretrained(
             str(model_path), local_files_only=True, trust_remote_code=False
         )
@@ -52,7 +74,8 @@ class Qwen3SingleGpuGenerationEngine:
 
     @property
     def identity(self) -> RuntimeAdapterIdentity:
-        return required_generation_engine_identity()
+        identity = self._identity
+        return identity.model_copy(deep=True)
 
     @property
     def runtime_state(self) -> dict[str, object]:
