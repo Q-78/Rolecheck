@@ -2,7 +2,7 @@
 
 **交接日期：** 2026-08-04
 **适用对象：** 接手当前仓库开发、GitHub 审查和服务器实验的新 Codex 对话
-**Current gate:** Pilot v0.3 Gate 6 completed and independently artifact-verified; repository review and publication are pending. The Gate 6 result document is authoritative; older gate-status text below is historical context.
+**Current gate:** Gate 6 and Gate 6.1A are published on `main`. Gate 6.2 structured-score signal redesign is implemented offline on `design/gate-6-2-signal-redesign`; all 187 tests and independent synthetic verification pass. Gate 6.2A real-model Smoke remains prohibited until Gate 6.2 is independently reviewed and merged. Older gate-status text below is historical context.
 
 ## 1. 新对话首先做什么
 
