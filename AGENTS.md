@@ -19,22 +19,22 @@ This file applies to the entire repository. Treat the frozen research documents 
 
 ## Current implementation phase
 
-- The active phase is Gate 2-B of the approved bounded server pilot in
-  `research_docs/SERVER_PILOT_PLAN_v0.1.md`. Gate 1 is merged and the audited
-  Gate 2-A server environment is frozen outside Git.
-- Local work may freeze the exact three-role Prompts and Role Contracts, team
-  and protocol configuration, deterministic answer parsing and model-free
-  aggregation, and dependency-injected generation-engine and Runtime Adapter
-  identities. Tests must use hand-authored fixtures and fake generation
-  engines; test outputs are not empirical evidence.
-- Do not download, materialize, construct, or evaluate MMLU-Pro in Gate 2-B.
-  Do not import or load a concrete Transformers model, execute real model/API
-  calls, or create empirical role outputs.
+- The active phase is Gate 3 review of the approved bounded server pilot in
+  `research_docs/SERVER_PILOT_PLAN_v0.1.md`. Gate 2-B is merged; the pinned
+  MMLU-Pro revision, nested 14/56-task manifests, and leakage-audit artifacts
+  are frozen outside Git and recorded in
+  `research_docs/GATE3_BENCHMARK_FREEZE_v0.2.md`.
+- Local work may validate deterministic label-blind subset construction,
+  immutable dataset and manifest identities, schema/license evidence, and
+  explicit gold-leakage guards. Tests must use hand-authored fixtures; test
+  outputs are not empirical evidence.
+- Do not load a concrete Transformers model, execute real model/API calls,
+  create empirical role outputs, run a smoke test, or evaluate MMLU-Pro.
 - Do not implement defect injection, keep-value or repair-value predictors,
   repair generators/repairers, AutoGen integration, or AgentInit integration.
   Do not migrate old experimental logic into this repository.
-- Stop before Gate 3 Benchmark materialization. Gate 2-B must pass review and
-  merge separately before any pinned dataset materialization is allowed.
+- Stop before Gate 4 model loading. Gate 3 must pass review and merge
+  separately before any smoke test or role execution is allowed.
 
 ## Role Contract Normalizer constraints
 
