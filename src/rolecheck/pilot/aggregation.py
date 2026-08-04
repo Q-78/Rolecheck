@@ -14,6 +14,9 @@ class DeterministicMajorityAggregator:
     _ID = "rolecheck.pilot.deterministic_majority"
     _VERSION = "v0.1"
     _POLICY = "strict_majority_then_lexicographic_tie_v0.1"
+    _PROTOCOL_DESCRIPTOR = (
+        "parse terminal answer letters; strict majority; lexicographically smallest tied leader"
+    )
 
     def __init__(self) -> None:
         self._identity = AggregatorIdentity(
@@ -40,6 +43,12 @@ class DeterministicMajorityAggregator:
     @property
     def accepts_variable_responses(self) -> bool:
         return True
+
+    @property
+    def protocol_descriptor(self) -> str:
+        """Frozen team-level description implemented by this aggregator."""
+
+        return self._PROTOCOL_DESCRIPTOR
 
     def aggregate(self, request: AggregationRequest) -> object:
         _ = request.aggregation_seed

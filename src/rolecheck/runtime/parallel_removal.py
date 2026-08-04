@@ -239,8 +239,12 @@ class ParallelRemovalRunner:
             "frozen_other_responses": team.removal_protocol.freeze_other_responses,
             "same_aggregation_protocol": (
                 team.removal_protocol.reaggregate_with_same_protocol
-                and aggregator_identity.aggregator_id
-                == team.execution_protocol.aggregation_protocol
+                and (
+                    aggregator_identity.aggregator_id
+                    == team.execution_protocol.aggregation_protocol
+                    or getattr(aggregator, "protocol_descriptor", None)
+                    == team.execution_protocol.aggregation_protocol
+                )
             ),
             "new_team_version": output_team_version != team.team_version,
             "target_exists": target is not None,

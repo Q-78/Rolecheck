@@ -2,7 +2,7 @@
 
 **交接日期：** 2026-08-04
 **适用对象：** 接手当前仓库开发、GitHub 审查和服务器实验的新 Codex 对话
-**Current gate:** Gate 2-B was merged in PR #7. Gate 3 has not started and still requires explicit approval.
+**Current gate:** Pilot v0.3 Gate 6 completed and independently artifact-verified; repository review and publication are pending. The Gate 6 result document is authoritative; older gate-status text below is historical context.
 
 ## 1. 新对话首先做什么
 

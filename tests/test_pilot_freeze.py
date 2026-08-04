@@ -234,6 +234,13 @@ def test_pilot_team_freezes_independence_model_tools_and_removal_protocol() -> N
     assert pilot_team_hash() == canonical_json_hash(team.model_dump(mode="json"))
 
 
+def test_pilot_aggregator_exposes_frozen_protocol_descriptor() -> None:
+    team = build_pilot_team()
+    aggregator = DeterministicMajorityAggregator()
+
+    assert aggregator.protocol_descriptor == team.execution_protocol.aggregation_protocol
+
+
 def test_pilot_environment_matches_gate_2_a_evidence() -> None:
     environment = pilot_runtime_environment()
     assert environment.model_assignment_id == PILOT_MODEL_ASSIGNMENT_ID

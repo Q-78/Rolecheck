@@ -6,61 +6,11 @@
 
 ## Current stage
 
-This repository contains the **research freeze, controlled execution protocols,
-local Stage 3 scaffold, Gate 1 empirical evidence boundary, and the Gate 2-B
-Pilot execution freeze**. Gate 2-B was merged through PR #7; Gate 3 has not
-started and still requires explicit approval. The operational status and new-conversation
-instructions are recorded in [`CURRENT_HANDOFF.md`](CURRENT_HANDOFF.md).
-It does not
-contain formal experiments or a working RoleCheck predictor.
+Pilot v0.3 Gate 6 has completed its bounded controlled-pilot infrastructure run and is awaiting independent review. The authoritative result is research_docs/PILOT_V0.3_GATE6_RESULT.md.
 
-Implemented now:
+Gate 6 produced 56 complete baselines and 56 valid controlled removals with zero retained-role re-executions. Baseline accuracy was 43/56; hash-assigned removal accuracy was 41/56. This is infrastructure evidence only: assigned targets are not RoleCheck predictions, and no predictor, repairer, calibration, or defect injection was run.
 
-- frozen `RESEARCH_SPEC_v0.2.md`;
-- decision, risk, intervention, and claim-evidence documents;
-- Python 3.11 package scaffold;
-- canonical Pydantic schemas;
-- YAML configuration loading;
-- standard/JSON-lines logging;
-- immutable experiment manifests;
-- deterministic Mock Runtime;
-- deterministic English/Chinese Role Contract Normalizer v0.1;
-- controlled parallel single-role removal with frozen-response re-aggregation;
-- controlled schema-preserving sequential DAG bypass;
-- dataset-agnostic offline task conversion with synthetic/non-empirical provenance;
-- deterministic train/development/test split manifests;
-- manifest-gated Fake and Recording Runtime Adapters with no network or model path;
-- explicit synthetic/non-empirical versus empirical/unevaluated evidence classes;
-- pinned, label-free, I/O-free MMLU-Pro task conversion contracts;
-- immutable self-hosted model, tokenizer, dependency, and hardware identities;
-- a manifest-gated self-hosted Runtime Adapter with an injected backend protocol;
-- three frozen independent Pilot roles and their normalized Role Contracts;
-- deterministic terminal-answer parsing and model-free majority aggregation;
-- an identity-checked dependency-injected Pilot execution backend interface,
-  with fake-engine tests only;
-- schema, configuration, manifest, and mock-runtime tests.
-
-Explicitly not implemented:
-
-- real LLM/API calls;
-- a concrete self-hosted model backend;
-- Benchmark download or dataset construction;
-- defect injection;
-- Static Defect Auditor;
-- Keep-Value Predictor;
-- repair candidate generator;
-- Repair-Value Predictor;
-- AgentInit or other initializer adapters;
-- formal intervention experiments;
-- migration of old experimental code.
-
-Concrete model execution remains unimplemented; automated tests use only Mock
-or Fake engines and their outputs are not research evidence. Gate 1 defines how
-future empirical evidence must be classified and identity-checked, and Gate 2-B
-freezes the execution configuration without downloading MMLU-Pro or loading
-Qwen3-8B. Stop before Benchmark materialization or any model load until a
-separate Gate 3 transition is reviewed and explicitly approved. The next boundary is governed by
-`research_docs/SERVER_PILOT_PLAN_v0.1.md`.
+Model, dataset, cache, and empirical artifacts remain outside Git. Stop after Gate 6 review. Predictor fitting or a larger formal experiment requires a separately reviewed protocol and explicit authorization.
 
 ## Frozen scientific hierarchy
 
