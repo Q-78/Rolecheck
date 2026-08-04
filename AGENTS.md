@@ -19,22 +19,20 @@ This file applies to the entire repository. Treat the frozen research documents 
 
 ## Current implementation phase
 
-- The active phase is Gate 3 review of the approved bounded server pilot in
-  `research_docs/SERVER_PILOT_PLAN_v0.1.md`. Gate 2-B is merged; the pinned
-  MMLU-Pro revision, nested 14/56-task manifests, and leakage-audit artifacts
-  are frozen outside Git and recorded in
-  `research_docs/GATE3_BENCHMARK_FREEZE_v0.2.md`.
-- Local work may validate deterministic label-blind subset construction,
-  immutable dataset and manifest identities, schema/license evidence, and
-  explicit gold-leakage guards. Tests must use hand-authored fixtures; test
-  outputs are not empirical evidence.
-- Do not load a concrete Transformers model, execute real model/API calls,
-  create empirical role outputs, run a smoke test, or evaluate MMLU-Pro.
+- The active phase is Gate 4 review of the approved bounded server pilot in
+  `research_docs/SERVER_PILOT_PLAN_v0.1.md`. Gate 3 is merged; the first BF16
+  model load and one-task, one-role smoke artifacts are frozen outside Git and
+  recorded in `research_docs/GATE4_SMOKE_FREEZE_v0.2.md`.
+- Local work may validate the concrete offline single-GPU generation engine,
+  smoke runner, immutable execution evidence, parser output, and unload state.
+  Tests must not load a concrete model; test outputs are not empirical evidence.
+- Do not run the 14-task dry run, execute multiple roles, aggregate empirical
+  outputs, perform removal/replay, or evaluate MMLU-Pro answers.
 - Do not implement defect injection, keep-value or repair-value predictors,
   repair generators/repairers, AutoGen integration, or AgentInit integration.
   Do not migrate old experimental logic into this repository.
-- Stop before Gate 4 model loading. Gate 3 must pass review and merge
-  separately before any smoke test or role execution is allowed.
+- Stop before Gate 5 dry-run execution. Gate 4 must pass review and merge
+  separately before any 14-task or multi-role execution is allowed.
 
 ## Role Contract Normalizer constraints
 
